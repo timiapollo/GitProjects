@@ -1,0 +1,52 @@
+- name: Create Nexus3 APT repositories
+  hosts: localhost
+  gather_facts: no
+
+  vars_prompt:
+    - name: "nexus_username"
+      prompt: "Enter your Nexus3 username"
+      private: no
+    - name: "nexus_password"
+      prompt: "Enter your Nexus3 password"
+      private: yes
+
+  vars:
+    nexus_url: "http://gre27elk002.vx7dhc01.next:8081"
+    repositories:
+      - { name: "ubuntu-jammy-main", distribution: "jammy" }
+      - { name: "ubuntu-jammy-updates", distribution: "jammy-updates" }
+      - { name: "ubuntu-jammy-security", distribution: "jammy-security" }
+      - { name: "ubuntu-jammy-backports", distribution: "jammy-backports" }
+
+  tasks:
+    - name: Create Nexus3 APT repositories
+      uri:
+        url: "{{ nexus_url }}/service/rest/v1/repositories/apt/proxy"
+        method: POST
+        headers:
+          Content-Type: application/json
+        url_username: "{{ nexus_username }}"
+        url_password: "{{ nexus_password }}"
+        force_basic_auth: yes
+        body_format: json
+        body:
+          name: "{{ item.name }}"
+          online: true
+          storage:
+            blobStoreName: "default"
+            strictContentTypeValidation: true
+          apt:
+            distribution: "{{ item.distribution }}"
+            flat: false
+          proxy:
+            remoteUrl: "http://archive.ubuntu.com/ubuntu/"
+            contentMaxAge: 1440   
+            metadataMaxAge: 1440  
+          httpClient:
+            blocked: false
+            autoBlock: true
+          negativeCache:
+            enabled: true
+            timeToLive: 1440
+        status_code: 201
+      loop: "{{ repositories }}"
