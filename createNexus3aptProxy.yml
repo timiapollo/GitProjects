@@ -11,7 +11,7 @@
       private: yes
 
   vars:
-    nexus_url: "http://gre27elk002.vx7dhc01.next:8081"
+    nexus_url: "http://nexusIPorFQDN:8081 if docker
     repositories:
       - { name: "ubuntu-jammy-main", distribution: "jammy" }
       - { name: "ubuntu-jammy-updates", distribution: "jammy-updates" }
